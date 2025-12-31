@@ -148,6 +148,16 @@ Com isso são iniciados:
 
 ---
 
+## Documentação da API (Swagger)
+
+A documentação OpenAPI está disponível em:
+
+http://localhost:8000/api/documentation
+
+Ela descreve os endpoints de criação de transações e consulta de saldo.
+
+---
+
 ## Trade-offs Considerados
 
 - Redis foi escolhido em vez de SQS/RabbitMQ pela simplicidade e integração nativa
