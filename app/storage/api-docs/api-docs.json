@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Transaction Engine API",
-        "description": "API para processamento assíncrono de transações financeiras",
+        "description": "API para criação e processamento assíncrono de transações financeiras",
         "version": "1.0.0"
     },
     "paths": {
@@ -51,8 +51,9 @@
                 "tags": [
                     "Transactions"
                 ],
-                "summary": "Cria uma nova transação",
-                "operationId": "ab765dced58cfe2f620929db31452145",
+                "summary": "Create a financial transaction (async)",
+                "description": "Creates a financial transaction. The transaction is created with status 'pending' and processed asynchronously via queue.",
+                "operationId": "createTransaction",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -60,30 +61,36 @@
                             "schema": {
                                 "required": [
                                     "source_account_id",
+                                    "destination_account_id",
                                     "amount",
                                     "type"
                                 ],
                                 "properties": {
                                     "source_account_id": {
+                                        "description": "Source account ID",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "destination_account_id": {
+                                        "description": "Destination account ID",
                                         "type": "integer",
                                         "example": 2
                                     },
                                     "amount": {
+                                        "description": "Transaction amount",
                                         "type": "number",
                                         "format": "float",
-                                        "example": 100.5
+                                        "example": 200.5
                                     },
                                     "type": {
+                                        "description": "Transaction type",
                                         "type": "string",
-                                        "enum": [
-                                            "credit",
-                                            "debit",
-                                            "transfer"
-                                        ]
+                                        "example": "transfer"
+                                    },
+                                    "idempotency_key": {
+                                        "description": "Optional idempotency key to prevent duplicate transactions",
+                                        "type": "string",
+                                        "example": "c2f1c9c0-8a2a-4c7a-b9f3-1b9e3b1f2e9a"
                                     }
                                 },
                                 "type": "object"
@@ -92,18 +99,99 @@
                     }
                 },
                 "responses": {
-                    "202": {
-                        "description": "Transação criada com sucesso",
+                    "201": {
+                        "description": "Transaction successfully created",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "transaction_id": {
-                                            "type": "integer"
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "source_account_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "destination_account_id": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "amount": {
+                                            "type": "number",
+                                            "example": 200.5
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "example": "transfer"
                                         },
                                         "status": {
                                             "type": "string",
-                                            "example": "PENDING"
+                                            "example": "pending"
+                                        },
+                                        "idempotency_key": {
+                                            "type": "string",
+                                            "example": "c2f1c9c0-8a2a-4c7a-b9f3-1b9e3b1f2e9a"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-01-02T21:50:44Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-01-02T21:50:44Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Transaction accepted for asynchronous processing (idempotent request)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "source_account_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "destination_account_id": {
+                                            "type": "integer",
+                                            "example": 2
+                                        },
+                                        "amount": {
+                                            "type": "number",
+                                            "example": 200.5
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "example": "transfer"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "pending"
+                                        },
+                                        "idempotency_key": {
+                                            "type": "string",
+                                            "example": "c2f1c9c0-8a2a-4c7a-b9f3-1b9e3b1f2e9a"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-01-02T21:50:44Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2026-01-02T21:50:44Z"
                                         }
                                     },
                                     "type": "object"
@@ -112,7 +200,7 @@
                         }
                     },
                     "422": {
-                        "description": "Erro de validação"
+                        "description": "Validation error"
                     }
                 }
             }
